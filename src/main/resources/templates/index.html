@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
+	  xmlns:c="http://www.w3.org/1999/XSL/Transform">
+<head>
+<meta charset="ISO-8859-1">
+<title>Registration and Login App</title>
+
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+	integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+	crossorigin="anonymous">
+<script type="text/javascript"
+		src="http://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js">
+	</script>
+
+</head>
+<body>
+	<!-- create navigation bar ( header) -->
+	<nav class="navbar navbar-inverse navbar-fixed-top">
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed"
+					data-toggle="collapse" data-target="#navbar" aria-expanded="false"
+					aria-controls="navbar">
+					<span class="sr-only">Toggle navigation</span> <span
+						class="icon-bar"></span> <span class="icon-bar"></span> <span
+						class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="#" th:href="@{/}">Registration and
+					Login Module</a>
+			</div>
+			<div id="navbar" class="collapse navbar-collapse">
+				<ul class="nav navbar-nav">
+					<li sec:authorize="isAuthenticated()"><a th:href="@{/logout}">Logout</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+	<br>
+	<br>
+
+	<div class="container">
+		<h1>Users list</h1>
+		Welcome <span sec:authentication="principal.username"> User</span>
+	</div>
+	<div class="container">
+		<div class="row">
+			<table class="table">
+				<thead>
+				<tr>
+					<th scope="col">
+						<input type="checkbox" id="all" name="all"/>
+					</th>
+					<th scope="col">ID</th>
+					<th scope="col">Firs name</th>
+					<th scope="col">Last name</th>
+					<th scope="col">Email</th>
+					<th scope="col">Registration time</th>
+					<th scope="col">Last login time</th>
+					<th scope="col">Status</th>
+				</tr>
+				</thead>
+				<tbody>
+					<tr th:each="user, count: ${users}" th:with="id = ${user.id}">
+						<td><input th:type="checkbox" th:id="${id}" th:value="${id}"></td>
+						<td th:text="${count.count}">
+						<td th:text="${user.firstName}" />
+						<td th:text="${user.lastName}" />
+						<td th:text="${user.email}" />
+						<td th:text="${user.createdDate}" />
+						<td th:text="${user.lastLoginTime}" />
+						<td  th:if="${user.status}">This user active</td>
+						<td  th:if="!${user.status}">This user inactive(blocked)</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<button type="button" class="btn btn-danger" id="delete"><i class="bi bi-trash3-fill"></i> Delete</button>
+			<button type="button" class="btn btn-warning" id="block"> <i class="bi bi-lock-fill"></i> Block</button>
+			<button type="button" class="btn btn-info" id="unblock"><i class="bi bi-unlock-fill"></i> Unblock</button>
+
+		</div>
+	</div>
+</body>
+<script>
+	$('#all').change(function(){
+		if($(this).prop('checked')){
+			$('tbody tr td input[type="checkbox"]').each(function(){
+				$(this).prop('checked', true);
+			});
+		}else{
+			$('tbody tr td input[type="checkbox"]').each(function(){
+				$(this).prop('checked', false);
+			});
+		}
+	});
+	$(function(){
+		$("#delete").on("click" , function(){
+			var checkedList = document.querySelectorAll('tbody tr td input:checked');
+			var listArray = [];
+			for (var checkbox of checkedList){
+				listArray.push(checkbox.id);
+			}
+			console.log({list: listArray});
+			$.ajax({
+				url : "/deleteData",
+				data : {
+					myArray:listArray
+				},
+				cache : false,
+				method : "POST",
+				success : function(data){
+					alert("Deleted!")
+					location.reload();
+				},
+				error : function(jhXHR){
+					alert(" Something went wrong!! "+jhXHR);
+				}
+			})
+		})
+
+	})
+	$(function(){
+		$("#block").on("click" , function(){
+			var checkedList = document.querySelectorAll('tbody tr td input:checked');
+			var listArray = [];
+			for (var checkbox of checkedList){
+				listArray.push(checkbox.id);
+			}
+			console.log({list: listArray});
+			$.ajax({
+				url : "/blockUser",
+				data : {
+					myArray:listArray
+				},
+				cache : false,
+				method : "POST",
+				success : function(data){
+					alert("Blocked!")
+					location.reload();
+				},
+				error : function(jhXHR){
+					alert(" Something went wrong!! "+jhXHR);
+				}
+			})
+		})
+
+	})
+	$(function(){
+		$("#unblock").on("click" , function(){
+			var checkedList = document.querySelectorAll('tbody tr td input:checked');
+			var listArray = [];
+			for (var checkbox of checkedList){
+				listArray.push(checkbox.id);
+			}
+			console.log({list: listArray});
+			$.ajax({
+				url : "/unblockUser",
+				data : {
+					myArray:listArray
+				},
+				cache : false,
+				method : "POST",
+				success : function(data){
+					alert("Unblocked!")
+					location.reload();
+				},
+				error : function(jhXHR){
+					alert(" Something went wrong!! "+jhXHR);
+				}
+			})
+		})
+
+	})
+</script>
+</html>
